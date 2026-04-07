@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Seira</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #f6f4f1; color: #111; min-height: 100vh; }
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .login-box { background: #fff; border-radius: 20px; padding: 48px 40px; box-shadow: 0 20px 60px rgba(17,17,17,0.10); width: 100%; max-width: 400px; text-align: center; }
+    .login-box h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #3b2f2f; margin-bottom: 6px; }
+    .login-box p  { color: #999; font-size: 0.9rem; margin-bottom: 32px; }
+    .login-box input { width: 100%; padding: 12px 16px; border: 1.5px solid #ede4e0; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 0.92rem; color: #3b2f2f; background: #faf7f5; outline: none; margin-bottom: 12px; transition: border-color .16s, box-shadow .16s; }
+    .login-box input:focus { border-color: #e78a7b; box-shadow: 0 0 0 3px rgba(231,138,123,0.12); background: #fff; }
+    .login-btn { width: 100%; background: #e78a7b; color: #fff; border: none; padding: 13px; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 1rem; font-family: 'Poppins', sans-serif; transition: transform .14s, box-shadow .14s; box-shadow: 0 8px 22px rgba(231,138,123,0.25); margin-top: 4px; }
+    .login-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(231,138,123,0.35); }
+    .login-error { color: #c0392b; font-size: 0.85rem; margin-top: 10px; display: none; }
+    #dashboard { display: none; }
+    .topbar { background: rgba(247,233,230,0.85); backdrop-filter: blur(6px); border-bottom: 1px solid rgba(180,160,150,0.14); padding: 16px 48px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 16px rgba(17,17,17,0.04); }
+    .topbar-logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #3b2f2f; }
+    .topbar-logo span { color: #e78a7b; }
+    .logout-btn { background: #f7e9e6; color: #3b2f2f; border: none; padding: 8px 18px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.88rem; font-family: 'Poppins', sans-serif; transition: background .14s; }
+    .logout-btn:hover { background: #f0d8d3; }
+    .dashboard-content { padding: 36px 48px 80px; max-width: 1200px; margin: 0 auto; }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; margin-bottom: 36px; }
+    .stat-card { background: #fff; border-radius: 14px; padding: 22px 24px; box-shadow: 0 8px 22px rgba(17,17,17,0.05); }
+    .stat-label { font-size: 0.8rem; color: #a88a85; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: #3b2f2f; }
+    .stat-sub   { font-size: 0.8rem; color: #bbb; margin-top: 4px; }
+    .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
+    .filter-btn { padding: 7px 16px; border-radius: 999px; border: 1.5px solid #ede4e0; background: #fff; color: #5a4039; font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all .14s; }
+    .filter-btn:hover  { border-color: #e78a7b; background: #fdf0ee; }
+    .filter-btn.active { border-color: #e78a7b; background: #e78a7b; color: #fff; }
+    .search-input { padding: 8px 14px; border: 1.5px solid #ede4e0; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 0.88rem; outline: none; background: #fff; color: #3b2f2f; margin-left: auto; transition: border-color .16s; }
+    .search-input:focus { border-color: #e78a7b; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #3b2f2f; margin-bottom: 16px; }
+    .orders-list { display: flex; flex-direction: column; gap: 14px; }
+    .order-card { background: #fff; border-radius: 14px; padding: 22px 26px; box-shadow: 0 8px 22px rgba(17,17,17,0.05); border-left: 4px solid #e78a7b; transition: box-shadow .16s, transform .16s; }
+    .order-card:hover { box-shadow: 0 14px 34px rgba(17,17,17,0.08); transform: translateY(-2px); }
+    .order-card.livree  { border-left-color: #a0b89a; }
+    .order-card.annulee { border-left-color: #e0b0a0; opacity: 0.7; }
+    .order-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .order-client-name { font-weight: 700; font-size: 1.05rem; color: #3b2f2f; }
+    .order-meta  { font-size: 0.82rem; color: #999; margin-top: 2px; }
+    .order-date  { font-size: 0.82rem; color: #bbb; }
+    .order-articles { background: #faf7f5; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; }
+    .order-articles-title { font-size: 0.8rem; font-weight: 700; color: #a88a85; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .order-article-item { display: flex; justify-content: space-between; font-size: 0.88rem; color: #5a4039; padding: 4px 0; border-bottom: 1px solid #f0ebe8; }
+    .order-article-item:last-child { border-bottom: none; }
+    .order-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .order-total { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: #3b2f2f; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-nouvelle  { background: #fdf0ee; color: #e78a7b; }
+    .status-confirmee { background: #e8f4e8; color: #5a7a55; }
+    .status-livree    { background: #eef5ed; color: #4a7044; }
+    .status-annulee   { background: #f5e8e8; color: #a06060; }
+    .order-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .action-btn { padding: 6px 14px; border-radius: 8px; border: 1.5px solid #ede4e0; background: #fff; color: #5a4039; font-family: 'Poppins', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all .14s; }
+    .action-btn:hover         { background: #f7e9e6; border-color: #e78a7b; color: #3b2f2f; }
+    .action-btn.btn-confirm   { background: #e8f4e8; border-color: #a0c89a; color: #4a7044; }
+    .action-btn.btn-deliver   { background: #eef5ed; border-color: #90c090; color: #3a6034; }
+    .action-btn.btn-cancel    { background: #f5e8e8; border-color: #d0a0a0; color: #a06060; }
+    .loading { text-align: center; padding: 60px 20px; color: #bbb; font-size: 0.96rem; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #bbb; }
+    .empty-icon { font-size: 3rem; margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .topbar { padding: 14px 20px; }
+      .dashboard-content { padding: 24px 16px 60px; }
+      .order-card { padding: 16px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Seira</h1>
+    <p>Tableau de bord admin</p>
+    <input type="text"     id="admin-user" placeholder="Nom d'utilisateur">
+    <input type="password" id="admin-pass" placeholder="Mot de passe">
+    <button class="login-btn" id="login-btn">Se connecter</button>
+    <p class="login-error" id="login-error">❌ Identifiants incorrects</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">Seira <span>Admin</span></div>
+    <button class="logout-btn" id="logout-btn">Se déconnecter</button>
+  </div>
+
+  <div class="dashboard-content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Commandes totales</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">depuis le début</div></div>
+      <div class="stat-card"><div class="stat-label">Nouvelles</div><div class="stat-value" id="stat-nouvelles">—</div><div class="stat-sub">en attente</div></div>
+      <div class="stat-card"><div class="stat-label">Chiffre d'affaires</div><div class="stat-value" id="stat-ca">—</div><div class="stat-sub">MAD total</div></div>
+      <div class="stat-card"><div class="stat-label">Livrées</div><div class="stat-value" id="stat-livrees">—</div><div class="stat-sub">commandes</div></div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="toutes">Toutes</button>
+      <button class="filter-btn" data-filter="nouvelle">Nouvelles</button>
+      <button class="filter-btn" data-filter="confirmee">Confirmées</button>
+      <button class="filter-btn" data-filter="livree">Livrées</button>
+      <button class="filter-btn" data-filter="annulee">Annulées</button>
+      <input class="search-input" id="search-input" placeholder="🔍 Rechercher client ou ville…">
+    </div>
+
+    <h2 class="section-title">Commandes</h2>
+    <div class="orders-list" id="orders-list">
+      <div class="loading">Chargement des commandes…</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, doc, updateDoc, orderBy, query }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBzrYtBfADnh7VHxAbpegOmw0FJSUZY9tM",
+    authDomain:        "sera-jewels.firebaseapp.com",
+    projectId:         "sera-jewels",
+    storageBucket:     "sera-jewels.firebasestorage.app",
+    messagingSenderId: "1091626004756",
+    appId:             "1:1091626004756:web:4cf87665b874288e0ed201"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // ⚠️ Changez ces identifiants admin
+  const ADMIN_USER = "admin";
+  const ADMIN_PASS = "Seira2024!";
+
+  let isLoggedIn = sessionStorage.getItem('seiraAdmin') === 'true';
+
+  function showDashboard() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    loadOrders();
+  }
+
+  if (isLoggedIn) showDashboard();
+
+  document.getElementById('login-btn').addEventListener('click', () => {
+    const user = document.getElementById('admin-user').value.trim();
+    const pass = document.getElementById('admin-pass').value;
+    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+      sessionStorage.setItem('seiraAdmin', 'true');
+      document.getElementById('login-error').style.display = 'none';
+      showDashboard();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  });
+  document.getElementById('admin-pass').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('login-btn').click(); });
+  document.getElementById('logout-btn').addEventListener('click', () => { sessionStorage.removeItem('seiraAdmin'); location.reload(); });
+
+  let allOrders    = [];
+  let activeFilter = 'toutes';
+  let searchQuery  = '';
+
+  function loadOrders() {
+    const q = query(collection(db, 'commandes'), orderBy('date', 'desc'));
+    onSnapshot(q, snapshot => {
+      allOrders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateStats();
+      renderOrders();
+    }, err => {
+      document.getElementById('orders-list').innerHTML =
+        `<div class="loading" style="color:#c0392b;">❌ Erreur Firebase : ${err.message}<br><small>Vérifiez les règles Firestore (test mode)</small></div>`;
+    });
+  }
+
+  function updateStats() {
+    document.getElementById('stat-total').textContent     = allOrders.length;
+    document.getElementById('stat-nouvelles').textContent = allOrders.filter(o=>o.statut==='nouvelle').length;
+    document.getElementById('stat-livrees').textContent   = allOrders.filter(o=>o.statut==='livree').length;
+    const ca = allOrders.reduce((s,o) => s+(parseFloat(o.total)||0), 0);
+    document.getElementById('stat-ca').textContent = ca.toLocaleString('fr-MA') + ' MAD';
+  }
+
+  function renderOrders() {
+    const list = document.getElementById('orders-list');
+    let filtered = allOrders;
+    if (activeFilter !== 'toutes') filtered = filtered.filter(o => o.statut === activeFilter);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(o =>
+        (o.prenom+' '+o.nom).toLowerCase().includes(q) ||
+        (o.ville||'').toLowerCase().includes(q) ||
+        (o.telephone||'').includes(q)
+      );
+    }
+    if (!filtered.length) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Aucune commande trouvée</p></div>`;
+      return;
+    }
+    list.innerHTML = '';
+    filtered.forEach(order => {
+      const card = document.createElement('div');
+      card.className = `order-card${order.statut==='livree'?' livree':order.statut==='annulee'?' annulee':''}`;
+
+      const date = order.date?.toDate
+        ? order.date.toDate().toLocaleString('fr-MA',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+        : '—';
+
+      const articles = Array.isArray(order.articles) ? order.articles : [];
+      const articlesHTML = articles.map(a =>
+        `<div class="order-article-item"><span>${a.name} × ${a.qty||1}</span><span>${(parseFloat(a.price)||0)*(parseInt(a.qty)||1)} MAD</span></div>`
+      ).join('') || '<div style="color:#bbb;font-size:0.85rem;">—</div>';
+
+      const statusLabels = {nouvelle:'Nouvelle',confirmee:'Confirmée',livree:'Livrée',annulee:'Annulée'};
+
+      card.innerHTML = `
+        <div class="order-header">
+          <div>
+            <div class="order-client-name">${order.prenom||''} ${order.nom||''}</div>
+            <div class="order-meta">📞 ${order.telephone||'—'} &nbsp;·&nbsp; 📍 ${order.adresse||'—'}, ${order.ville||'—'}</div>
+          </div>
+          <div style="text-align:right">
+            <span class="status-badge status-${order.statut}">${statusLabels[order.statut]||order.statut}</span>
+            <div class="order-date">${date}</div>
+          </div>
+        </div>
+        <div class="order-articles">
+          <div class="order-articles-title">Articles commandés</div>
+          ${articlesHTML}
+        </div>
+        <div class="order-footer">
+          <div class="order-total">Total : ${order.total||0} MAD</div>
+          <div class="order-actions" data-id="${order.id}">
+            ${order.statut==='nouvelle'  ? `<button class="action-btn btn-confirm">✓ Confirmer</button>`:''}
+            ${order.statut==='confirmee' ? `<button class="action-btn btn-deliver">🚚 Livrée</button>`:''}
+            ${order.statut!=='annulee'&&order.statut!=='livree' ? `<button class="action-btn btn-cancel">✕ Annuler</button>`:''}
+          </div>
+        </div>`;
+
+      card.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = card.querySelector('.order-actions').dataset.id;
+          let newStatut = btn.classList.contains('btn-confirm') ? 'confirmee'
+                        : btn.classList.contains('btn-deliver') ? 'livree'
+                        : btn.classList.contains('btn-cancel')  ? 'annulee' : null;
+          if (newStatut) {
+            btn.disabled = true; btn.textContent = '…';
+            await updateDoc(doc(db,'commandes',id), { statut: newStatut });
+          }
+        });
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      renderOrders();
+    });
+  });
+  document.getElementById('search-input').addEventListener('input', e => { searchQuery = e.target.value; renderOrders(); });
+</script>
+</body>
+</html>
