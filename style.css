@@ -586,8 +586,9 @@ h1, h2 {
 .admin-pass-form input { padding:8px 10px; border-radius:8px; border:1px solid #eee; }
 
 @media (max-width:720px) {
-  /* On small screens make the login panel centered modal */
-  #login-panel { display: block !important; }
+  /* On small screens make the login panel centered modal.
+     Do not force visibility with !important: visibility is handled by JS
+     via the `open` class so toggling works correctly on mobile. */
   #login-panel .login-form { width: calc(100% - 32px); max-width: 420px; }
   .admin-add-form { padding:10px; flex-direction: column; align-items: stretch; }
   .admin-add-form input { width: 100%; }
@@ -598,4 +599,15 @@ h1, h2 {
 
 @media (max-width:420px) {
   .product img { height: 140px; }
+}
+
+/* Login panel visible state controlled by JS by toggling #login-panel.open */
+#login-panel { display: none; pointer-events: none; }
+#login-panel.open { display: block; pointer-events: auto; }
+#login-panel .login-form { pointer-events: auto; }
+
+/* Improve touch responsiveness for buttons on mobile */
+.btn, .cart-btn, .fav-btn, .qty-btn, .remove-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
 }

@@ -43,15 +43,74 @@ function getAdminUsername() {
 
 function getAdminPassword() {
   // prefer runtime override in localStorage so admin can change password without editing files
-  const override = localStorage.getItem('seiraAdminPassword');
-  if (override) return String(override);
+  // NOTE: for security we prefer storing a hash (see verifyAdminPassword/updateAdminPassword).
+  // This function remains as a fallback to read a plaintext password from SECURITY_CONFIG (build-time).
+  const legacyPlain = localStorage.getItem('seiraAdminPassword');
+  if (legacyPlain) return String(legacyPlain);
   if (window.SECURITY_CONFIG && window.SECURITY_CONFIG.ADMIN_PASSWORD) return String(window.SECURITY_CONFIG.ADMIN_PASSWORD);
   return 'adminpass';
 }
 
-function updateAdminPassword(newPass) {
+// --- Password hashing helpers using Web Crypto (PBKDF2) ---
+function _toHex(buffer) {
+  return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function _fromBase64(b64) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+function generateSalt(len = 16) {
+  const a = new Uint8Array(len);
+  crypto.getRandomValues(a);
+  // store salt as base64
+  let s = '';
+  for (let i = 0; i < a.length; i++) s += String.fromCharCode(a[i]);
+  return btoa(s);
+}
+
+async function deriveKeyHex(password, saltB64, iterations = 100000, hash = 'SHA-256') {
+  const salt = _fromBase64(saltB64);
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits']);
+  const derived = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations, hash }, keyMaterial, 256);
+  return _toHex(derived);
+}
+
+async function verifyAdminPassword(plainPassword) {
+  // Check client-stored hash (recommended)
+  const storedHash = localStorage.getItem('seiraAdminPasswordHash');
+  const storedSalt = localStorage.getItem('seiraAdminPasswordSalt');
+  if (storedHash && storedSalt) {
+    try {
+      const derived = await deriveKeyHex(plainPassword, storedSalt);
+      return derived === storedHash;
+    } catch (e) {
+      console.error('verifyAdminPassword error', e);
+      return false;
+    }
+  }
+  // Legacy fallback: plaintext override in localStorage (not recommended)
+  const legacy = localStorage.getItem('seiraAdminPassword');
+  if (legacy) return legacy === plainPassword;
+  // Fallback to build-time config (security/config.js) — still plaintext there
+  if (window.SECURITY_CONFIG && window.SECURITY_CONFIG.ADMIN_PASSWORD) return String(window.SECURITY_CONFIG.ADMIN_PASSWORD) === plainPassword;
+  // default demo password
+  return plainPassword === 'adminpass';
+}
+
+async function updateAdminPassword(newPass) {
   if (!newPass) return;
-  localStorage.setItem('seiraAdminPassword', String(newPass));
+  const salt = generateSalt();
+  const hash = await deriveKeyHex(newPass, salt);
+  // store only the salt + derived key (no plaintext)
+  localStorage.setItem('seiraAdminPasswordHash', String(hash));
+  localStorage.setItem('seiraAdminPasswordSalt', String(salt));
+  // remove legacy plain storage if present
+  localStorage.removeItem('seiraAdminPassword');
 }
 
 function createEnvContent(username, password) {
@@ -376,7 +435,13 @@ function createLoginPanel() {
     </form>
   `;
   document.body.appendChild(panel);
-  panel.style.display = 'none';
+  // keep hidden by default; visibility is controlled with the `.open` class
+  panel.classList.remove('open');
+
+  // close modal when tapping the overlay background (mobile friendly)
+  panel.addEventListener('click', (e) => {
+    if (e.target === panel) panel.classList.remove('open');
+  });
 
   const form = panel.querySelector('#login-form');
   const logoutBtn = panel.querySelector('#logout-btn');
@@ -394,30 +459,31 @@ function createLoginPanel() {
     }
   });
 
-  form.addEventListener('submit', (ev) => {
+  // make submit handler async because admin password verification may be async
+  form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const name = (document.getElementById('login-username').value || '').trim() || 'invité';
     const role = document.getElementById('role-select').value || 'user';
     if (role === 'admin') {
       const pass = (document.getElementById('login-password').value || '');
-      // only allow admin if username & password match the configured admin creds
-      if (name !== getAdminUsername() || pass !== getAdminPassword()) {
+      // only allow admin if username matches and password verifies
+      if (name !== getAdminUsername() || !(await verifyAdminPassword(pass))) {
         showToast('Identifiants admin invalides');
         return;
       }
       setCurrentUser({ username: name, role: 'admin' });
-      panel.style.display = 'none';
+      panel.classList.remove('open');
       showToast(`Connecté en tant que ${name} (admin)`);
     } else {
       setCurrentUser({ username: name, role: 'user' });
-      panel.style.display = 'none';
+      panel.classList.remove('open');
       showToast(`Connecté en tant que ${name} (utilisateur)`);
     }
   });
 
   logoutBtn.addEventListener('click', () => {
     setCurrentUser(null);
-    panel.style.display = 'none';
+    panel.classList.remove('open');
     showToast('Déconnecté');
   });
 }
@@ -426,7 +492,7 @@ function toggleLoginPanel() {
   createLoginPanel();
   const panel = document.getElementById('login-panel');
   if (!panel) return;
-  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  panel.classList.toggle('open');
   // update logout visibility
   const user = getCurrentUser();
   const logoutBtn = document.getElementById('logout-btn');
@@ -436,10 +502,10 @@ function toggleLoginPanel() {
 function setupLoginLink() {
   const link = document.getElementById('login-link');
   if (!link) return;
-  link.addEventListener('click', (ev) => {
-    ev.preventDefault();
-    toggleLoginPanel();
-  });
+  // support both click and touchstart for better mobile responsiveness
+  const toggleFn = (ev) => { ev.preventDefault(); toggleLoginPanel(); };
+  link.addEventListener('click', toggleFn, { passive: false });
+  link.addEventListener('touchstart', toggleFn, { passive: false });
 }
 
 // ─── Admin: show add-product form only when role === 'admin' ────────────────
@@ -522,12 +588,12 @@ function showAdminAddFormIfAdmin() {
       // password change handling
       const passForm = adminPanel.querySelector('#admin-pass-form');
       const exportBtn = adminPanel.querySelector('#export-env');
-      passForm.addEventListener('submit', (ev) => {
+      passForm.addEventListener('submit', async (ev) => {
         ev.preventDefault();
         const current = document.getElementById('current-pass').value || '';
         const n1 = document.getElementById('new-pass').value || '';
         const n2 = document.getElementById('confirm-pass').value || '';
-        if (current !== getAdminPassword()) {
+        if (!(await verifyAdminPassword(current))) {
           showToast('Mot de passe actuel incorrect');
           return;
         }
@@ -535,14 +601,16 @@ function showAdminAddFormIfAdmin() {
           showToast('Les nouveaux mots de passe ne correspondent pas');
           return;
         }
-        updateAdminPassword(n1);
+        await updateAdminPassword(n1);
         passForm.reset();
-        showToast('Mot de passe admin mis à jour (stocké localement)');
+        showToast('Mot de passe admin mis à jour (stocké localement en hash)');
       });
 
       exportBtn.addEventListener('click', () => {
         const username = getAdminUsername();
-        const password = getAdminPassword();
+        // if password is stored hashed client-side, do NOT export plaintext
+        const hasHash = !!localStorage.getItem('seiraAdminPasswordHash');
+        const password = hasHash ? '*** client-side hashed password (see README) ***' : getAdminPassword();
         const content = createEnvContent(username, password);
         downloadEnvFile(content, 'seira.env');
         showToast('.env prêt au téléchargement');
