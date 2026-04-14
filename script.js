@@ -627,7 +627,7 @@ function addProductToDOM(prod) {
   const article = document.createElement('article');
   article.className = 'product';
   article.innerHTML = `
-    ${prod.img ? `<img src="${escapeHTML(prod.img)}" alt="${escapeHTML(prod.name)}">` : `<div style="width:100%;height:200px;background:#efe7e4;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#8b7a76;">No image</div>`}
+    ${prod.img ? `<img src="${escapeHTML(prod.img)}" alt="${escapeHTML(prod.name)}" loading="lazy">` : `<div style="width:100%;height:200px;background:#efe7e4;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#8b7a76;">No image</div>`}
     <h3>${escapeHTML(prod.name)}</h3>
     <p class="price">${prod.price} MAD</p>
     <div class="product-actions">
@@ -666,6 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // init login / admin UI
   setupLoginLink();
   createLoginPanel();
+  setupMobileNav();
   // load stored products (persisted from previous admin adds)
   loadStoredProducts();
   updateNavForUser();
@@ -695,3 +696,23 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCart();
   renderFavoritesList();
 });
+
+// Mobile nav toggle: show/hide nav-links on small screens
+function setupMobileNav() {
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('primary-navigation');
+  if (!toggle || !nav) return;
+  const setState = (open) => {
+    nav.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+  toggle.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    setState(!nav.classList.contains('open'));
+  }, { passive: false });
+  toggle.addEventListener('touchstart', (ev) => { ev.preventDefault(); setState(!nav.classList.contains('open')); }, { passive: false });
+  // close menu when clicking a link
+  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setState(false)));
+  // close on resize if larger than mobile
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) setState(false); });
+}

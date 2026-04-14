@@ -12,11 +12,16 @@
 <!-- NAVBAR -->
 <nav class="nav" role="navigation" aria-label="Navigation principale">
   <a href="index.html" class="logo" aria-label="Seira — Accueil">Seira</a>
-  <div class="nav-links">
-    <a href="index.html#products">Collection</a>
-    <a href="about.html">About</a>
-    <a href="shop.html">Shop</a>
-    <a href="#" id="login-link">Connexion</a>
+  <button class="nav-toggle" id="nav-toggle" aria-controls="primary-navigation" aria-expanded="false" aria-label="Afficher le menu">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </button>
+    <a href="#" id="login-link" class="login-inline">Connexion</a>
+    <div class="nav-links" id="primary-navigation">
+      <a href="index.html#products">Collection</a>
+      <a href="about.html">About</a>
+      <a href="shop.html">Shop</a>
     <span id="user-role" style="display:none; font-weight:700; color:#3b2f2f; margin-left:6px;"></span>
     <a class="fav-link" href="favorites.html" aria-label="Favoris">
       <svg class="fav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -38,7 +43,7 @@
 <section class="products" aria-label="Produits">
 
   <article class="product">
-    <img src="img1.jpg" alt="cherry charms">
+  <img src="img1.jpg" alt="cherry charms" loading="lazy">
     <h3>cherry charms</h3>
     <p class="price">30 MAD</p>
     <button class="cart-btn" data-name="cherry charms" data-price="30">Add to cart</button>
@@ -46,7 +51,7 @@
   </article>
 
   <article class="product">
-    <img src="img2.jpg" alt="star necklace">
+  <img src="img2.jpg" alt="star necklace" loading="lazy">
     <h3>star necklace</h3>
     <p class="price">55 MAD</p>
     <button class="cart-btn" data-name="star necklace" data-price="55">Add to cart</button>
@@ -54,7 +59,7 @@
   </article>
 
   <article class="product">
-    <img src="img3.jpg" alt="love letter necklace">
+  <img src="img3.jpg" alt="love letter necklace" loading="lazy">
     <h3>love letter necklace</h3>
     <p class="price">65 MAD</p>
     <button class="cart-btn" data-name="love letter necklace" data-price="65">Add to cart</button>
@@ -62,7 +67,7 @@
   </article>
 
   <article class="product">
-    <img src="img4.jpg" alt="promise ring">
+  <img src="img4.jpg" alt="promise ring" loading="lazy">
     <h3>promise ring</h3>
     <p class="price">50 MAD</p>
     <button class="cart-btn" data-name="promise ring" data-price="50">Add to cart</button>
