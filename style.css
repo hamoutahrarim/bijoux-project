@@ -32,8 +32,23 @@ html, body { width: 100%; overflow-x: hidden; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 0;
 }
-.nav-toggle .bar { display: block; width: 22px; height: 2px; background: #3b2f2f; margin: 4px 0; border-radius: 2px; }
+/* Hamburger icon: three evenly spaced lines */
+.nav-toggle .bar {
+  display: block;
+  width: 28px;
+  height: 3px;
+  background: #3b2f2f;
+  border-radius: 2px;
+  transition: transform .22s ease, opacity .18s ease;
+}
+.nav-toggle .bar + .bar { margin-top: 5px; }
+
+/* open state animation (simple) */
+.nav-toggle.open .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.nav-toggle.open .bar:nth-child(2) { opacity: 0; }
+.nav-toggle.open .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
 a.logo {
   font-family: 'Playfair Display', serif;
@@ -48,6 +63,21 @@ a.logo {
   display: flex;
   align-items: center;
   gap: 18px;
+}
+
+/* Right-side action group (login, favorites, cart, hamburger) */
+.nav-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Hide the mobile-only login link on desktop (prevents duplicate Connexion button)
+   Show it only on small screens where the burger menu is used. */
+#login-link-mobile { display: none; }
+
+@media (max-width: 720px) {
+  #login-link-mobile { display: block; }
 }
 
 .nav-links a {

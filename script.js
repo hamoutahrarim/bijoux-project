@@ -500,12 +500,18 @@ function toggleLoginPanel() {
 }
 
 function setupLoginLink() {
-  const link = document.getElementById('login-link');
-  if (!link) return;
+  const links = [];
+  const primary = document.getElementById('login-link');
+  const mobile = document.getElementById('login-link-mobile');
+  if (primary) links.push(primary);
+  if (mobile) links.push(mobile);
+  if (!links.length) return;
   // support both click and touchstart for better mobile responsiveness
   const toggleFn = (ev) => { ev.preventDefault(); toggleLoginPanel(); };
-  link.addEventListener('click', toggleFn, { passive: false });
-  link.addEventListener('touchstart', toggleFn, { passive: false });
+  links.forEach(link => {
+    link.addEventListener('click', toggleFn, { passive: false });
+    link.addEventListener('touchstart', toggleFn, { passive: false });
+  });
 }
 
 // ─── Admin: show add-product form only when role === 'admin' ────────────────
@@ -705,6 +711,8 @@ function setupMobileNav() {
   const setState = (open) => {
     nav.classList.toggle('open', open);
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // animate hamburger -> X by toggling .open on the toggle button
+    toggle.classList.toggle('open', open);
   };
   toggle.addEventListener('click', (ev) => {
     ev.preventDefault();
