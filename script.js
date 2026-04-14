@@ -703,15 +703,14 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFavoritesList();
 });
 
-// Mobile nav toggle: show/hide nav-links on small screens
+// Mobile nav toggle: show/hide dropdown on small screens
 function setupMobileNav() {
-  const toggle = document.getElementById('nav-toggle');
-  const nav = document.getElementById('primary-navigation');
+  const toggle = document.getElementById('nav-hamburger');
+  const nav = document.getElementById('nav-dropdown');
   if (!toggle || !nav) return;
   const setState = (open) => {
     nav.classList.toggle('open', open);
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    // animate hamburger -> X by toggling .open on the toggle button
     toggle.classList.toggle('open', open);
   };
   toggle.addEventListener('click', (ev) => {
@@ -719,8 +718,6 @@ function setupMobileNav() {
     setState(!nav.classList.contains('open'));
   }, { passive: false });
   toggle.addEventListener('touchstart', (ev) => { ev.preventDefault(); setState(!nav.classList.contains('open')); }, { passive: false });
-  // close menu when clicking a link
   nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setState(false)));
-  // close on resize if larger than mobile
   window.addEventListener('resize', () => { if (window.innerWidth > 768) setState(false); });
 }

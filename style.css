@@ -9,185 +9,247 @@ body {
 html, body { width: 100%; overflow-x: hidden; }
 
 /* ─── Navbar ────────────────────────────────────────────────────────────────── */
-.nav {
-  display: flex;
-  justify-content: space-between;
+.site-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 18px 56px;
-  background: rgba(247, 233, 230, 0.65);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(180, 160, 150, 0.14);
-  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.04);
+  padding: 0 48px;
+  height: 64px;
+  background: rgba(247, 233, 230, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(180, 155, 145, 0.16);
+  box-shadow: 0 4px 20px rgba(17, 17, 17, 0.04);
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 100;
 }
 
-.nav-toggle {
-  display: none;
-  background: transparent;
-  border: none;
-  width: 44px;
-  height: 44px;
+/* Logo — centré */
+.site-nav .logo {
+  grid-column: 2;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #3b2f2f;
+  letter-spacing: 0.3px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Liens gauche */
+.nav-left {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Icônes droite */
+.nav-right {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.nav-left a,
+.nav-right a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 11px;
+  text-decoration: none;
+  color: #5a4039;
+  font-size: 0.88rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background .14s, color .14s, transform .14s;
+  white-space: nowrap;
+}
+.nav-left a:hover,
+.nav-right a:hover {
+  background: rgba(231, 138, 123, 0.11);
+  color: #3b2f2f;
+  transform: translateY(-1px);
+}
+
+/* Icon-only buttons (favoris, panier, user) */
+.nav-icon-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  padding: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: #5a4039;
+  text-decoration: none;
+  transition: background .14s, color .14s, transform .14s;
+  position: relative;
 }
-/* Hamburger icon: three evenly spaced lines */
-.nav-toggle .bar {
+.nav-icon-btn:hover {
+  background: rgba(231, 138, 123, 0.11);
+  color: #3b2f2f;
+  transform: translateY(-1px);
+}
+
+/* Hamburger — caché sur desktop */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 38px;
+  height: 38px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 7px;
+  transition: background .14s;
+}
+.nav-hamburger:hover { background: rgba(231, 138, 123, 0.11); }
+.nav-hamburger span {
   display: block;
-  width: 28px;
-  height: 3px;
+  width: 100%;
+  height: 2px;
   background: #3b2f2f;
   border-radius: 2px;
   transition: transform .22s ease, opacity .18s ease;
 }
-.nav-toggle .bar + .bar { margin-top: 5px; }
+.nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* open state animation (simple) */
-.nav-toggle.open .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-.nav-toggle.open .bar:nth-child(2) { opacity: 0; }
-.nav-toggle.open .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
-
-a.logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
+/* ─── Badges (favoris + panier) ─────────────────────────────────────────────── */
+.fav-count,
+.cart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #e78a7b;
+  color: #fff;
+  font-size: 0.7rem;
   font-weight: 700;
+  padding: 0 5px;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  pointer-events: none;
+}
+
+/* ─── Dropdown mobile ───────────────────────────────────────────────────────── */
+.nav-dropdown {
+  display: none;
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: rgba(252, 246, 243, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(180, 155, 145, 0.16);
+  box-shadow: 0 12px 32px rgba(17, 17, 17, 0.08);
+  flex-direction: column;
+  z-index: 99;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height .3s ease;
+}
+.nav-dropdown.open {
+  display: flex;
+  max-height: 400px;
+}
+.nav-dropdown a {
+  display: block;
+  padding: 14px 24px;
+  text-decoration: none;
   color: #3b2f2f;
-  letter-spacing: 0.4px;
-  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(180, 155, 145, 0.1);
+  transition: background .12s, padding-left .12s;
+}
+.nav-dropdown a:last-child { border-bottom: none; }
+.nav-dropdown a:hover {
+  background: rgba(231, 138, 123, 0.09);
+  padding-left: 32px;
 }
 
-.nav-links {
-  display: flex;
+/* ─── Mobile ────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .site-nav {
+    padding: 0 16px;
+    grid-template-columns: auto 1fr auto;
+    height: 56px;
+  }
+  .nav-left { display: none; }
+  .site-nav .logo {
+    grid-column: 2;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+  .nav-right { gap: 2px; }
+  .nav-hamburger { display: flex; }
+  /* hide desktop login link text on mobile, keep icon buttons */
+  .nav-right .nav-text-link { display: none; }
+}
+
+/* Desktop: hide hamburger, show all links */
+@media (min-width: 769px) {
+  .nav-dropdown { display: none !important; }
+}
+
+/* ─── Login inline button ───────────────────────────────────────────────────── */
+.login-inline {
+  display: inline-flex;
   align-items: center;
-  gap: 18px;
-}
-
-/* Right-side action group (login, favorites, cart, hamburger) */
-.nav-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-/* Hide the mobile-only login link on desktop (prevents duplicate Connexion button)
-   Show it only on small screens where the burger menu is used. */
-#login-link-mobile { display: none; }
-
-@media (max-width: 720px) {
-  #login-link-mobile { display: block; }
-}
-
-.nav-links a {
-  margin: 0;
-  padding: 6px 10px;
-  text-decoration: none;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: transparent;
   color: #5a4039;
-  font-size: 0.9rem;
-  border-radius: 10px;
-  transition: transform .14s ease, background .14s ease, color .14s ease;
-  font-weight: 600;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  font-size: 0.88rem;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: background .14s, color .14s, transform .14s;
 }
-
-.nav-links a:hover {
-  background: rgba(231, 138, 123, 0.12);
+.login-inline:hover {
+  background: rgba(231, 138, 123, 0.11);
   color: #3b2f2f;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
+/* ─── Badges (favoris + panier) — même style ────────────────────────────────── */
 .fav-icon {
   vertical-align: middle;
   display: inline-block;
   width: 20px;
   height: 20px;
-  margin-right: 4px;
 }
-
 .fav-link:hover .fav-icon path { stroke: #c4604f; }
-.fav-link { position: relative; font-weight: 600; }
+.fav-link { position: relative; font-weight: 500; }
 
-/* ─── Badges (favoris + panier) — même style ────────────────────────────────── */
-.fav-count,
-.cart-badge {
-  display: inline-block;
-  min-width: 20px;
-  height: 20px;
-  line-height: 20px;
-  border-radius: 999px;
-  background: #e78a7b;       /* même couleur terracotta pour les deux */
-  color: #fff;               /* texte blanc uniforme */
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-align: center;
-  padding: 0 6px;
-  margin-left: 4px;
-  vertical-align: middle;
-}
+#login-link-mobile { display: none; }
+@media (max-width: 768px) { #login-link-mobile { display: block; } }
 
-@media (max-width: 720px) {
-  .nav { padding: 12px 16px; }
-  .nav-links { gap: 10px; }
-  a.logo { font-size: 1.1rem; }
-  .nav-toggle { display: flex; }
-  .nav-links {
-    display: none;
-    position: fixed;
-    top: 64px;
-    right: 12px;
-    background: rgba(255, 255, 255, 0.98);
-    flex-direction: column;
-    padding: 12px;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    max-width: 92%;
-  }
-  .nav-links a { display: block; padding: 10px 12px; }
-  .nav-links.open { display: flex; }
-}
-
-/* ─── Login inline button: match other nav links ───────────────────────────── */
-.login-inline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-left: 8px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: transparent;
-  color: #5a4039; /* same as .nav-links a */
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: none;
-  border: none;
-  min-height: auto;
-  font-size: 0.92rem;
-  line-height: 1;
-  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-}
-.login-inline:hover {
-  background: rgba(231, 138, 123, 0.12);
-  color: #3b2f2f;
-  transform: translateY(-2px);
-}
-.login-inline:active { transform: translateY(0); opacity: 0.95; }
-.login-inline:focus { outline: 2px solid rgba(231,138,123,0.16); outline-offset: 2px; }
-
-/* neutralize browser defaults but keep color in sync with nav */
+/* neutralize browser defaults */
 a#login-link, a.login-inline {
   -webkit-appearance: none !important;
   appearance: none !important;
-  -webkit-text-decoration-skip: none !important;
   text-decoration: none !important;
-  color: inherit !important;
-  background: transparent !important;
 }
 a#login-link:visited, a#login-link:active, a#login-link:focus,
 a.login-inline:visited, a.login-inline:active, a.login-inline:focus {
   text-decoration: none !important;
-  color: inherit !important;
 }
 
 /* ─── Page header ───────────────────────────────────────────────────────────── */
