@@ -1,0 +1,59 @@
+# ══════════════════════════════════════════════════════════════════
+#  Seira Jewels — Configuration Apache (.htaccess)
+#  À placer à la RACINE du projet
+# ══════════════════════════════════════════════════════════════════
+
+Options -Indexes
+RewriteEngine On
+
+# ── Rediriger /api/db.php → /backend/db.php ──────────────────────
+# Permet d'avoir une URL propre côté front (/api/db.php)
+# sans exposer la structure réelle du serveur
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ backend/$1 [L]
+
+# ── Headers de sécurité ──────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # CORS pour db.php uniquement
+  <FilesMatch "db\.php$">
+    Header set Access-Control-Allow-Origin  "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, X-Admin-Key"
+  </FilesMatch>
+</IfModule>
+
+# ── Interdire l'accès direct aux fichiers sensibles ──────────────
+<FilesMatch "\.(env|sql|log|sh|bak|ini)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# ── Cache des assets statiques ───────────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css            "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+  ExpiresByType image/jpeg          "access plus 1 month"
+  ExpiresByType image/png           "access plus 1 month"
+  ExpiresByType image/webp          "access plus 1 month"
+</IfModule>
+
+# ── Compression gzip ─────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+</IfModule>
+
+# ── Désactiver le buffering pour SSE (EventSource) ───────────────
+<FilesMatch "db\.php$">
+  <IfModule mod_deflate.c>
+    SetEnv no-gzip 1
+  </IfModule>
+  <IfModule mod_expires.c>
+    ExpiresActive Off
+  </IfModule>
+</FilesMatch>

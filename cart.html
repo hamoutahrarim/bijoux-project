@@ -49,7 +49,7 @@
   <a href="about.html">About</a>
   <a href="#" id="login-link-mobile">Connexion</a>
 </nav>
-
+<button onclick="commander()">Commander</button>
 
 <!-- PAGE HEADER -->
 <header class="page-header">
@@ -71,7 +71,9 @@
     if (!cart || cart.length === 0) {
       showToast('Votre panier est vide !');
     } else {
-      window.location.href = 'checkout.html';
+        window.location.href = 'checkout.html';
+      // Passer le panier à la page de paiement
+      localStorage.setItem('cart', JSON.stringify(cart));
     }
   });
 </script>

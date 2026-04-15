@@ -721,3 +721,66 @@ function setupMobileNav() {
   nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setState(false)));
   window.addEventListener('resize', () => { if (window.innerWidth > 768) setState(false); });
 }
+async function sendOrderToAPI(clientData) {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  if (!cart.length) {
+    showToast("Votre panier est vide ❌");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:8888/seira/db.php?action=create_order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        prenom: clientData.prenom,
+        nom: clientData.nom,
+        telephone: clientData.telephone,
+        adresse: clientData.adresse,
+        ville: clientData.ville,
+        articles: cart
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showToast("Commande envoyée ✅");
+
+      // vider panier
+      localStorage.removeItem("cart");
+      cart.length = 0;
+
+      updateCartBadges();
+      renderCart();
+
+      // optionnel
+      // window.location.href = "success.html";
+    } else {
+      showToast("Erreur ❌ " + data.error);
+    }
+
+  } catch (err) {
+    console.error(err);
+    showToast("Erreur serveur ❌");
+  }
+}
+function checkout() {
+  const user = getCurrentUser();
+
+  if (!user) {
+    showToast("Connecte-toi d'abord ❌");
+    return;
+  }
+
+  sendOrderToAPI({
+    prenom: user.username,
+    nom: "",
+    telephone: "0000000000",
+    adresse: "non renseignée",
+    ville: "Fes"
+  });
+}

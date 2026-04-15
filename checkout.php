@@ -1,3 +1,4 @@
+<?php /* Checkout page - Seira */ ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -61,7 +62,7 @@
 </head>
 <body>
 
-<!-- NAVBAR (même structure que les autres pages) -->
+<!-- NAVBAR -->
 <header class="site-nav" role="banner">
   <div class="nav-left">
     <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false">
@@ -176,11 +177,8 @@
 </div>
 
 <script>
-  // ─── Configuration ───────────────────────────────────────────────
-  // 👉 Remplacez par l'URL réelle de votre db.php sur le serveur
   const DB_URL = '/api/db.php';
 
-  // ─── State ───────────────────────────────────────────────────────
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem('cart')) || []; } catch(e) { cart = []; }
   let selectedCity = null;
@@ -191,7 +189,6 @@
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ─── Résumé commande ─────────────────────────────────────────────
   function renderSummary() {
     const container = document.getElementById('summary-items');
     if (!cart.length) { container.innerHTML = '<p style="color:#aaa;font-size:.88rem;">Panier vide</p>'; return; }
@@ -209,7 +206,6 @@
     document.getElementById('summary-total').textContent    = total + ' MAD';
   }
 
-  // ─── Sélection ville ─────────────────────────────────────────────
   function renderCities(filter = '') {
     const grid = document.getElementById('city-grid');
     grid.innerHTML = '';
@@ -230,7 +226,6 @@
     });
   }
 
-  // ─── Validation ──────────────────────────────────────────────────
   function validateForm() {
     const ok = ['prenom','nom','telephone','adresse'].every(id => document.getElementById(id).value.trim())
                && selectedCity && cart.length > 0;
@@ -238,7 +233,6 @@
     return ok;
   }
 
-  // ─── Envoi commande vers db.php ──────────────────────────────────
   async function handleConfirm() {
     if (!validateForm()) return;
 
@@ -268,7 +262,7 @@
         body:    JSON.stringify(payload)
       });
 
-      // Robust parsing: si la réponse n'est pas du JSON valide, lire le texte brut
+      // Robust parsing: if the response isn't valid JSON, read raw text for debugging
       let json;
       try {
         json = await res.json();
@@ -282,7 +276,6 @@
         throw new Error(json.error || `Erreur serveur ${res.status}`);
       }
 
-      // Succès
       status.textContent = '✅ Commande enregistrée';
       localStorage.setItem('cart', JSON.stringify([]));
 
@@ -291,7 +284,6 @@
       document.getElementById('success-city').textContent     = selectedCity;
       document.getElementById('success-order-id').textContent = `N° commande : #${json.data.order_id}`;
 
-      // Étape 3 active
       document.getElementById('step2').className = 'step done';
       document.getElementById('step2').querySelector('.step-num').textContent = '✓';
       document.getElementById('step3').className      = 'step active';
@@ -307,7 +299,6 @@
     }
   }
 
-  // ─── Init ────────────────────────────────────────────────────────
   renderSummary();
   renderCities();
   document.getElementById('city-search').addEventListener('input', e => renderCities(e.target.value));
